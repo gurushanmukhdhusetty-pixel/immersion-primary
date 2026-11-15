@@ -19,9 +19,12 @@ export async function POST(request: Request) {
       if (upload instanceof File && upload.size) reference = upload;
     } else d = (await request.json()) as Record<string, unknown>;
 
-    const designs = (await getVisibleProducts()).map(c => c.name);
-    if (d.requestType === 'purchase' && (typeof d.selectedDesign !== 'string' || !designs.includes(d.selectedDesign)))
-      return Response.json({error: 'Choose an available example design.'}, {status: 400});
+    const products = await getVisibleProducts();
+    const product = products.find(c => c.name === d.selectedDesign);
+    if (d.requestType === 'purchase' && !product) return Response.json({error: 'Choose an available example design.'}, {status: 400});
+    const colorNames = product?.colors?.map(c => c.name) ?? [];
+    if (d.requestType === 'purchase' && colorNames.length && (typeof d.selectedColor !== 'string' || !colorNames.includes(d.selectedColor)))
+      return Response.json({error: 'Choose a colour for your case.'}, {status: 400});
 
     let bytes: ArrayBuffer | undefined;
     if (reference) {
@@ -48,6 +51,7 @@ export async function POST(request: Request) {
       id,
       requestType: purchase ? 'purchase' : 'custom',
       selectedDesign: purchase ? String(d.selectedDesign) : null,
+      selectedColor: purchase && colorNames.length ? String(d.selectedColor) : null,
       name: (d.name as string).trim(),
       email: (d.email as string).trim(),
       model: (d.model as string).trim(),

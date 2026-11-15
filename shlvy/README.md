@@ -48,7 +48,7 @@ Go to **`https://<your-site>/admin`** and use the username and password stored i
 |---|---|
 | **Dashboard** | New requests waiting for a reply, open orders, money earned, most-wanted designs. |
 | **Orders & requests** | Every request from the website. Search, filter by stage, open one to see all details and the customer's reference image. Set the price, tracking number and private notes. Move it through the stages **New → Contacted → Confirmed → Paid → Shipped → Delivered** (or Cancelled). One-click ready-made emails (price quote, payment received, shipped). Download everything as a spreadsheet. |
-| **Products** | Add a new design (photo + name + category), edit, hide/show, move up/down in the shop, delete. A new category automatically becomes a new filter button on the shop. |
+| **Products** | Add a new design (photo + name + category), edit, hide/show, move up/down in the shop, delete. Give a design **colour options** (name + colour picker): customers must pick one when they click *Buy this design*, and the colour shows on the order. A new category automatically becomes a new filter button on the shop. |
 | **Setup & help** | Shows green ticks when the database and image storage are connected, and what to click if not. |
 
 ---

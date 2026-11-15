@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       image: data.image,
       price: data.price!,
       visible: data.visible!,
+      colors: data.colors ?? [],
       order: 0,
       createdAt: new Date().toISOString(),
     };

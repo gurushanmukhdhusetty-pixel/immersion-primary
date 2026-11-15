@@ -12,7 +12,18 @@ export async function readProductForm(request: Request, id: string) {
     theme: field('theme') || field('category') || 'Unisex',
     price: field('price', 40),
     visible: form.get('visible') !== 'false',
+    colors: [],
   };
+  try {
+    const raw = JSON.parse(String(form.get('colors') ?? '[]')) as {name?: unknown; hex?: unknown}[];
+    out.colors = raw
+      .map(c => ({name: String(c.name ?? '').trim().slice(0, 40), hex: /^#[0-9a-f]{6}$/i.test(String(c.hex)) ? String(c.hex) : '#cccccc'}))
+      .filter(c => c.name)
+      .slice(0, 20);
+  } catch {
+    return {error: 'Colour options could not be read.'};
+  }
+  if (new Set(out.colors!.map(c => c.name.toLowerCase())).size !== out.colors!.length) return {error: 'Two colours have the same name.'};
   if (!out.name) return {error: 'Please give the design a name.'};
   const file = form.get('image');
   if (file instanceof File && file.size) {

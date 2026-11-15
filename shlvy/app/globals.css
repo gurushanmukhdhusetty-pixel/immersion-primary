@@ -35,3 +35,16 @@ body{background:#101116;color:var(--ink);isolation:isolate}header,main,footer{po
 .modal .reference-upload p,.modal .reference-upload label span{color:#655c6c}.modal .reference-upload input{color:#332c3b}.modal .reference-selected button{color:#6c3975}
 
 .collection-filters{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 25px}.collection-filters button{background:transparent;border:1px solid #817c70;border-radius:24px;padding:10px 18px;color:#e8e4d9}.collection-filters button[aria-pressed=true]{background:#e5dfd1;color:#292821}.sample-preview{width:100%;padding:0;border:0;display:block}.sample-actions{padding:0 22px 20px;background:#211b2a}.sample-actions button{width:100%;border:1px solid #d8cfbb;border-radius:8px;background:#e9e2d5;color:#28251f;padding:12px;font-weight:600}.sample-actions p{font-size:10px;color:#bfb9b0;line-height:1.5;margin:9px 0 0}.chosen-product{display:flex;gap:20px;align-items:center;padding:12px;background:#fff;border:1px solid #d8d4c9;border-radius:10px;margin-bottom:20px}.chosen-product img{width:75px;height:110px;object-fit:contain}.chosen-product p{font-size:12px}.chosen-product button{background:none;border:0;padding:0;text-decoration:underline;font-size:12px}.hero h1>span{color:#ddd5c3}.primary,.ticker{background:#ded8c8;color:#252722}.primary:hover{background:#eee8da}.sticker{background:#d7ded2}.d0{background:#a69887}.d1{background:#1c293e}.preview-controls>div{flex-wrap:wrap}.sample{text-align:left}.sample .samplelabel{padding-bottom:14px}
+
+/* ---- Shlvy additions ---- */
+/* Bigger, bolder letter-mark logo */
+header .logo{font-size:48px;letter-spacing:-2.8px;line-height:1;gap:4px}
+header .logo span{font-size:38px;transform:translateY(-2px)}
+footer .logo{font-size:44px;letter-spacing:-2.6px;line-height:1}
+footer .logo span{font-size:34px}
+@media(max-width:640px){header .logo{font-size:38px;letter-spacing:-2px}header .logo span{font-size:30px}footer .logo{font-size:36px}footer .logo span{font-size:28px}}
+/* Colour options */
+.color-chips button{display:inline-flex;align-items:center;gap:8px}
+.color-chips .swatch{width:16px;height:16px;border-radius:50%;border:1px solid #0003;display:inline-block;flex:none}
+.swatches{display:flex;gap:5px;margin-top:9px}
+.swatches i{width:11px;height:11px;border-radius:50%;border:1px solid #ffffff55;box-shadow:0 0 0 1px #0002;display:block}

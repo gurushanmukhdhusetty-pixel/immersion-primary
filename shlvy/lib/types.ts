@@ -1,3 +1,5 @@
+export type ProductColor = {name: string; hex: string};
+
 export type Product = {
   id: string;
   name: string;
@@ -7,6 +9,7 @@ export type Product = {
   image: string;
   price: string;
   visible: boolean;
+  colors?: ProductColor[]; // colour options the customer can pick
   order: number;
   createdAt?: string;
 };
@@ -20,6 +23,7 @@ export type Order = {
   id: string;
   requestType: 'purchase' | 'custom';
   selectedDesign: string | null;
+  selectedColor?: string | null;
   name: string;
   email: string;
   model: string;
