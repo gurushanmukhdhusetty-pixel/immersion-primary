@@ -16,7 +16,7 @@ export default function Sidebar() {
   }
   return (
     <aside className="adm-side">
-      <div className="adm-brand">shlvy<span>✳︎</span><small>ADMIN</small></div>
+      <div className="adm-brand">SHLVY<span>✳︎</span><small>ADMIN</small></div>
       {links.map(([href, icon, label]) => (
         <a key={href} href={href} className={`link ${path === href ? 'on' : ''}`}><span>{icon}</span>{label}</a>
       ))}

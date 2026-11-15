@@ -12,10 +12,19 @@ export async function readProductForm(request: Request, id: string) {
     theme: field('theme') || field('category') || 'Unisex',
     price: field('price', 40),
     visible: form.get('visible') !== 'false',
-    colors: [],
-    caseTypes: [],
   };
-  try {
+  const safeImg = (v: unknown) => {
+    const img = String(v ?? '');
+    return /^\/(api\/files\/products|designs)\/[\w./-]+$/.test(img) && !img.includes('..') ? img : null;
+  };
+  if (form.has('images')) {
+    try {
+      out.images = (JSON.parse(String(form.get('images'))) as unknown[]).map(safeImg).filter((x): x is string => !!x).slice(0, 12);
+    } catch {
+      return {error: 'Photos could not be read.'};
+    }
+  }
+  if (form.has('colors')) try {
     const raw = JSON.parse(String(form.get('colors') ?? '[]')) as {name?: unknown; hex?: unknown; image?: unknown}[];
     out.colors = raw
       .map(c => {
@@ -28,8 +37,8 @@ export async function readProductForm(request: Request, id: string) {
   } catch {
     return {error: 'Colour options could not be read.'};
   }
-  if (new Set(out.colors!.map(c => c.name.toLowerCase())).size !== out.colors!.length) return {error: 'Two colours have the same name.'};
-  try {
+  if (out.colors && new Set(out.colors.map(c => c.name.toLowerCase())).size !== out.colors.length) return {error: 'Two colours have the same name.'};
+  if (form.has('caseTypes')) try {
     const raw = JSON.parse(String(form.get('caseTypes') ?? '[]')) as {name?: unknown; price?: unknown}[];
     out.caseTypes = raw
       .map(t => ({name: String(t.name ?? '').trim().slice(0, 40), price: String(t.price ?? '').trim().slice(0, 40)}))
@@ -38,7 +47,7 @@ export async function readProductForm(request: Request, id: string) {
   } catch {
     return {error: 'Case types could not be read.'};
   }
-  if (new Set(out.caseTypes!.map(t => t.name.toLowerCase())).size !== out.caseTypes!.length) return {error: 'Two case types have the same name.'};
+  if (out.caseTypes && new Set(out.caseTypes.map(t => t.name.toLowerCase())).size !== out.caseTypes.length) return {error: 'Two case types have the same name.'};
   if (!out.name) return {error: 'Please give the design a name.'};
   const file = form.get('image');
   if (file instanceof File && file.size) {

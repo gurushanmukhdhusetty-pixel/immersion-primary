@@ -23,7 +23,7 @@ export default function Login() {
     <div className="adm">
       <div className="adm-login">
         <form className="adm-card" onSubmit={submit}>
-          <div className="adm-brand" style={{padding: 0}}>shlvy<span>✳︎</span><small>ADMIN</small></div>
+          <div className="adm-brand" style={{padding: 0}}>SHLVY<span>✳︎</span><small>ADMIN</small></div>
           <h2>Sign in to your shop</h2>
           <label className="f">Username<input className="adm-input" autoComplete="username" value={username} onChange={e => setUsername(e.target.value)} required /></label>
           <label className="f">Password<input className="adm-input" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required /></label>

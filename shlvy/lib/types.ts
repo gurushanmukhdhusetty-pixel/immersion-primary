@@ -11,6 +11,7 @@ export type Product = {
   category: string;
   theme: string;
   image: string;
+  images?: string[]; // extra photos shown as a slideshow after the main photo
   price: string;
   visible: boolean;
   colors?: ProductColor[]; // colour options the customer can pick
@@ -26,7 +27,7 @@ export type OrderEvent = { at: string; text: string };
 
 export type Order = {
   id: string;
-  requestType: 'purchase' | 'custom';
+  requestType: 'purchase' | 'custom' | 'own-design';
   selectedDesign: string | null;
   selectedColor?: string | null;
   selectedCaseType?: string | null;
@@ -48,5 +49,7 @@ export type Order = {
   adminNotes: string;
   history: OrderEvent[];
 };
+
+export const REQUEST_LABELS: Record<Order['requestType'], string> = {purchase: 'Buy a design', custom: 'Custom design (interests)', 'own-design': 'Own design upload'};
 
 export const BASE_CATEGORIES = ['Unisex', 'Soft & playful', 'Dark & bold'];

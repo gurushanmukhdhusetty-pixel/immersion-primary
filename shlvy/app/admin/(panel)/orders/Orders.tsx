@@ -1,6 +1,6 @@
 'use client';
 import {useEffect, useMemo, useState} from 'react';
-import {ORDER_STATUSES, type Order} from '@/lib/types';
+import {ORDER_STATUSES, REQUEST_LABELS, type Order} from '@/lib/types';
 import {api, when} from '../../ui';
 
 const NEXT_STEP: Record<string, string> = {New: 'Contacted', Contacted: 'Confirmed', Confirmed: 'Paid', Paid: 'Shipped', Shipped: 'Delivered'};
@@ -32,7 +32,7 @@ export default function Orders() {
     const s = q.trim().toLowerCase();
     return (orders ?? []).filter(o =>
       (status === 'All' || (status === 'Active' ? !['Delivered', 'Cancelled'].includes(o.status) : o.status === status)) &&
-      (type === 'All' || (type === 'Buy a design' ? o.requestType === 'purchase' : o.requestType === 'custom')) &&
+      (type === 'All' || REQUEST_LABELS[o.requestType] === type) &&
       (!s || [o.name, o.email, o.model, o.selectedDesign, o.selectedColor, o.selectedCaseType, o.id, o.notes].join(' ').toLowerCase().includes(s)),
     );
   }, [orders, status, type, q]);
@@ -59,7 +59,7 @@ export default function Orders() {
           ))}
         </div>
         <div className="adm-pills">
-          {['All', 'Buy a design', 'Custom design'].map(s => <button key={s} className={type === s ? 'on' : ''} onClick={() => setType(s)}>{s}</button>)}
+          {['All', ...Object.values(REQUEST_LABELS)].map(s => <button key={s} className={type === s ? 'on' : ''} onClick={() => setType(s)}>{s}</button>)}
         </div>
       </div>
       {error && <div className="adm-err">{error}</div>}
@@ -73,7 +73,7 @@ export default function Orders() {
               <tr key={o.id} className="click" onClick={() => setOpenId(o.id)}>
                 <td className="adm-small">{when(o.createdAt)}</td>
                 <td><b>{o.name}</b><div className="adm-muted adm-small">{o.email}</div></td>
-                <td>{o.selectedDesign || 'Custom design'}{[o.selectedColor, o.selectedCaseType].filter(Boolean).map(x => <span key={x} className="adm-muted"> · {x}</span>)}<div><span className="badge type">{o.requestType === 'purchase' ? 'Buy' : 'Custom'}</span></div></td>
+                <td>{o.selectedDesign || (o.requestType === 'own-design' ? 'Own design' : 'Custom design')}{[o.selectedColor, o.selectedCaseType].filter(Boolean).map(x => <span key={x} className="adm-muted"> · {x}</span>)}<div><span className="badge type">{o.requestType === 'purchase' ? 'Buy' : o.requestType === 'own-design' ? 'Own design' : 'Custom'}</span></div></td>
                 <td className="hide-m">{o.model}</td>
                 <td className="hide-m">{o.price || '—'}</td>
                 <td><span className={`badge ${o.status}`}>{o.status}</span></td>
@@ -93,7 +93,7 @@ function OrderDrawer({order, onClose, onSaved, onDeleted}: {order: Order; onClos
   const [msg, setMsg] = useState<{ok?: string; err?: string}>({});
   const ref = order.id.slice(0, 8).toUpperCase();
   const extras = [order.selectedColor, order.selectedCaseType].filter(Boolean).join(', ');
-  const what = order.selectedDesign ? `the ${order.selectedDesign}${extras ? ` (${extras})` : ''} case` : 'your custom case design';
+  const what = order.selectedDesign ? `the ${order.selectedDesign}${extras ? ` (${extras})` : ''} case` : order.requestType === 'own-design' ? 'your case with your own design' : 'your custom case design';
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -140,7 +140,7 @@ function OrderDrawer({order, onClose, onSaved, onDeleted}: {order: Order; onClos
         </div>
         <div className="adm-card">
           <dl className="adm-kv">
-            <dt>Type</dt><dd>{order.requestType === 'purchase' ? 'Buy an example design' : 'Custom design brief'}</dd>
+            <dt>Type</dt><dd>{REQUEST_LABELS[order.requestType] ?? order.requestType}</dd>
             {order.selectedDesign && (<><dt>Design</dt><dd><b>{order.selectedDesign}</b></dd></>)}
             {order.selectedColor && (<><dt>Colour</dt><dd><b>{order.selectedColor}</b></dd></>)}
             {order.selectedCaseType && (<><dt>Case type</dt><dd><b>{order.selectedCaseType}</b></dd></>)}
@@ -156,7 +156,7 @@ function OrderDrawer({order, onClose, onSaved, onDeleted}: {order: Order; onClos
           </dl>
           {order.referenceUrl && (
             <div style={{marginTop: 14}}>
-              <div className="adm-muted adm-small" style={{marginBottom: 6}}>Reference image — {order.referenceName}</div>
+              <div className="adm-muted adm-small" style={{marginBottom: 6}}>{order.requestType === 'own-design' ? 'Customer’s design (to print)' : 'Reference image'} — {order.referenceName} · <a href={order.referenceUrl} download><u>Download</u></a></div>
               <a href={order.referenceUrl} target="_blank"><img src={order.referenceUrl} alt="Customer reference" style={{maxWidth: '100%', maxHeight: 260, borderRadius: 10}} /></a>
             </div>
           )}

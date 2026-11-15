@@ -37,12 +37,14 @@ export async function POST(request: Request) {
       if (!looksLikeImage(new Uint8Array(bytes), reference.type)) return Response.json({error: 'This file is not a supported image.'}, {status: 400});
     }
 
+    const own = d.requestType === 'own-design';
+    if (own && !reference) return Response.json({error: 'Upload the design you want on your case.'}, {status: 400});
     const str = (v: unknown, max: number, required = true) => typeof v === 'string' && v.length <= max && (!required || !!v.trim());
     if (
       !str(d.name, 100) || !str(d.email, 254) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email as string) ||
       !str(d.model, 120) || !str(d.notes, 2000, false) || !str(d.style, 100) || !str(d.palette, 100) ||
       !Array.isArray(d.interests) || d.interests.length > 40 || d.interests.some(i => typeof i !== 'string' || i.length > 60) ||
-      (!d.interests.length && !(d.notes as string).trim())
+      (!own && !d.interests.length && !(d.notes as string).trim())
     )
       return Response.json({error: 'Please check your details and complete all steps.'}, {status: 400});
 
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
     const purchase = d.requestType === 'purchase';
     const order: Order = {
       id,
-      requestType: purchase ? 'purchase' : 'custom',
+      requestType: purchase ? 'purchase' : own ? 'own-design' : 'custom',
       selectedDesign: purchase ? String(d.selectedDesign) : null,
       selectedColor: purchase && colorNames.length ? String(d.selectedColor) : null,
       selectedCaseType: purchase && typeNames.length ? String(d.selectedCaseType) : null,

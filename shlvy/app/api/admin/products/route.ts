@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       visible: data.visible!,
       colors: data.colors ?? [],
       caseTypes: data.caseTypes ?? [],
+      images: data.images ?? [],
       order: 0,
       createdAt: new Date().toISOString(),
     };

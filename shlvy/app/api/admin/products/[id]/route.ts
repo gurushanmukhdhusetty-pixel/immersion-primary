@@ -2,6 +2,7 @@ import {guard} from '@/lib/auth';
 import {getProducts, saveProducts} from '@/lib/store';
 import {deleteImage} from '@/lib/files';
 import {readProductForm} from '@/lib/product-form';
+import type {Product} from '@/lib/types';
 
 type Ctx = {params: Promise<{id: string}>};
 
@@ -18,9 +19,11 @@ export async function PATCH(request: Request, {params}: Ctx) {
     if (list.some(p => p.id !== id && p.name.toLowerCase() === data.name!.toLowerCase())) return Response.json({error: 'Another design already uses this name.'}, {status: 400});
     const old = list[i];
     if (data.image && data.image !== old.image) await deleteImage(old.image);
-    const kept = new Set((data.colors ?? []).map(c => c.image));
-    for (const c of old.colors ?? []) if (c.image && !kept.has(c.image)) await deleteImage(c.image);
-    list[i] = {...old, ...data, image: data.image || old.image};
+    const changes = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)) as Partial<Product>;
+    const next: Product = {...old, ...changes, image: data.image || old.image};
+    const kept = new Set([...(next.colors ?? []).map(c => c.image), ...(next.images ?? [])]);
+    for (const img of [...(old.colors ?? []).map(c => c.image), ...(old.images ?? [])]) if (img && !kept.has(img)) await deleteImage(img);
+    list[i] = next;
     await saveProducts(list);
     return Response.json(list[i]);
   } catch (e) {
@@ -40,6 +43,7 @@ export async function DELETE(_req: Request, {params}: Ctx) {
     if (p) {
       await deleteImage(p.image);
       for (const c of p.colors ?? []) await deleteImage(c.image);
+      for (const img of p.images ?? []) await deleteImage(img);
     }
     return Response.json({ok: true});
   } catch (e) {

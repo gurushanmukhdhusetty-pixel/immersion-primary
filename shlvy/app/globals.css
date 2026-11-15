@@ -52,3 +52,28 @@ footer .logo span{font-size:34px}
 .swatches button[aria-pressed=true]{box-shadow:0 0 0 2px currentColor}
 .type-chips button{display:inline-flex;align-items:center;gap:8px}
 .type-chips b{font-weight:700;opacity:.75}
+/* Logo in capitals */
+header .logo,footer .logo{letter-spacing:-1px}
+/* Rolling ticker strip */
+.ticker{justify-content:flex-start!important;padding-left:0!important;padding-right:0!important}
+.ticker-track{display:flex;flex:none;animation:shlvy-ticker 38s linear infinite}
+.ticker-group{display:flex;flex:none;align-items:center;gap:25px;padding-right:25px}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes shlvy-ticker{to{transform:translateX(-25%)}}
+@media(prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+/* Several photos per design */
+.sample{position:relative}
+.photo-nav{position:absolute;top:12px;right:12px;z-index:2;display:flex;align-items:center;gap:2px;background:#15161acc;color:#fff;border-radius:20px;padding:3px;font-size:11px;letter-spacing:.5px}
+.photo-nav button{background:none;border:0;color:inherit;width:26px;height:26px;border-radius:50%;font-size:18px;line-height:1;padding:0}
+.photo-nav button:hover{background:#ffffff26}
+.photo-nav span{min-width:28px;text-align:center}
+/* Three ways section */
+.way-cta{margin-top:6px;background:transparent;border:1px solid currentColor;color:inherit;border-radius:30px;padding:11px 18px;font-size:13px;font-weight:600;display:inline-flex;gap:14px}
+.way-cta:hover{background:#ffffff14}
+/* Mode chooser in the request window */
+.mode-options{display:grid;gap:12px;margin:18px 0 6px}
+.mode-options button{display:grid;grid-template-columns:40px 1fr;gap:2px 14px;text-align:left;padding:16px 18px;background:#fff;border:1px solid #d8d4c9;border-radius:12px;color:#252921;transition:border-color .2s,transform .2s}
+.mode-options button:hover{border-color:#7c8f55;transform:translateY(-2px)}
+.mode-options span{grid-row:span 2;font-size:26px;align-self:center;text-align:center}
+.mode-options strong{font-size:15px}
+.mode-options p{margin:0;font-size:12px;line-height:1.5;color:#6d7066}

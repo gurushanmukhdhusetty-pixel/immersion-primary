@@ -34,7 +34,7 @@ export default async function Dashboard() {
           {orders.length === 0 && <p className="adm-muted">No orders yet. They’ll appear here as soon as a customer sends one.</p>}
           {orders.slice(0, 6).map(o => (
             <a key={o.id} href={`/admin/orders?open=${o.id}`} className="adm-row" style={{justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid var(--line)'}}>
-              <span><b>{o.name}</b> <span className="adm-muted adm-small">· {o.selectedDesign || 'Custom design'}</span></span>
+              <span><b>{o.name}</b> <span className="adm-muted adm-small">· {o.selectedDesign || (o.requestType === 'own-design' ? 'Own design' : 'Custom design')}</span></span>
               <span className={`badge ${o.status}`}>{o.status}</span>
             </a>
           ))}

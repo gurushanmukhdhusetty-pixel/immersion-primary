@@ -78,6 +78,7 @@ export default function Products() {
                   <span className="adm-muted adm-small">{p.colors.length} colour{p.colors.length > 1 ? 's' : ''}</span>
                 </div>
               )}
+              {!!p.images?.length && <div className="adm-muted adm-small">+{p.images.length} more photo{p.images.length > 1 ? 's' : ''}</div>}
               {!!p.caseTypes?.length && <div className="adm-small">{p.caseTypes.map(t => t.name).join(' · ')}</div>}
               <div className="adm-muted adm-small">{p.category}{p.theme !== p.category ? ` · ${p.theme}` : ''}{p.price ? ` · ${p.price}` : ''}</div>
               <div className="adm-row" style={{marginTop: 'auto'}}>
@@ -113,6 +114,25 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
   const [newCat, setNewCat] = useState('');
   const [colors, setColors] = useState<ProductColor[]>(product?.colors ?? []);
   const [uploading, setUploading] = useState<number | null>(null);
+  const [images, setImages] = useState<string[]>(product?.images ?? []);
+  const [uploadingMore, setUploadingMore] = useState(0);
+  async function uploadMore(files: FileList | null) {
+    if (!files?.length) return;
+    setErr('');
+    const list = Array.from(files).slice(0, 12 - images.length);
+    setUploadingMore(list.length);
+    for (const file of list) {
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        const {url} = await api<{url: string}>('/api/admin/upload', {method: 'POST', body: fd});
+        setImages(im => [...im, url]);
+      } catch (e) {
+        setErr(`${file.name}: ${(e as Error).message}`);
+      }
+      setUploadingMore(n => n - 1);
+    }
+  }
   const [caseTypes, setCaseTypes] = useState<ProductCaseType[]>(product?.caseTypes ?? []);
   async function uploadColour(i: number, file: File | undefined) {
     if (!file) return;
@@ -159,6 +179,7 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
     fd.append('visible', String(f.visible));
     fd.append('colors', JSON.stringify(colors.filter(c => c.name.trim())));
     fd.append('caseTypes', JSON.stringify(caseTypes.filter(t => t.name.trim())));
+    fd.append('images', JSON.stringify(images));
     if (file) fd.append('image', file);
     try {
       const saved = await api<Product>(product ? `/api/admin/products/${product.id}` : '/api/admin/products', {method: product ? 'PATCH' : 'POST', body: fd});
@@ -185,6 +206,24 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setFile(e.target.files?.[0] ?? null)} />
             <span style={{fontWeight: 400}}>JPG, PNG or WebP under 4 MB. Best: a tall case photo on a transparent or plain background (like the existing ones, 1024×1536).</span>
           </label>
+        </div>
+        <div className="f" style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+          <span style={{fontWeight: 600, fontSize: 12, color: 'var(--muted)'}}>More photos (optional) — back view, side view, in hand… Customers flip through them with arrows. Up to 12.</span>
+          <div className="adm-row" style={{gap: 8}}>
+            {images.map((src, i) => (
+              <div key={src} style={{position: 'relative', width: 70, height: 96, background: '#eceade', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <img src={src} alt="" style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} />
+                <button type="button" title="Remove photo" onClick={() => setImages(images.filter((_, j) => j !== i))} style={{position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: '50%', border: 0, background: 'var(--bad)', color: '#fff', cursor: 'pointer', fontSize: 11}}>✕</button>
+                {i > 0 && <button type="button" title="Move earlier" onClick={() => { const n = [...images]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setImages(n); }} style={{position: 'absolute', bottom: -6, left: -6, width: 22, height: 22, borderRadius: '50%', border: '1px solid var(--line)', background: '#fff', cursor: 'pointer', fontSize: 11}}>←</button>}
+              </div>
+            ))}
+            {images.length < 12 && (
+              <label className="adm-btn ghost sm" style={{height: 40}}>
+                {uploadingMore > 0 ? `Uploading ${uploadingMore}…` : '＋ Add photos'}
+                <input type="file" multiple accept="image/jpeg,image/png,image/webp" hidden onChange={e => { uploadMore(e.target.files); e.target.value = ''; }} />
+              </label>
+            )}
+          </div>
         </div>
         <label className="f">Design name<input className="adm-input" required maxLength={100} value={f.name} onChange={e => setF({...f, name: e.target.value})} placeholder="e.g. Peach Bloom" /></label>
         <label className="f">Category (shop filter)
@@ -238,7 +277,7 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
         <label className="adm-row" style={{fontWeight: 600}}><input type="checkbox" checked={f.visible} onChange={e => setF({...f, visible: e.target.checked})} /> Show this design in the shop</label>
         {err && <div className="adm-err">{err}</div>}
         <div className="adm-row">
-          <button className="adm-btn orange" disabled={busy || uploading !== null}>{busy ? 'Saving…' : product ? 'Save changes' : 'Add to shop'}</button>
+          <button className="adm-btn orange" disabled={busy || uploading !== null || uploadingMore > 0}>{busy ? 'Saving…' : product ? 'Save changes' : 'Add to shop'}</button>
           <button type="button" className="adm-btn ghost" onClick={onClose}>Cancel</button>
         </div>
       </form>
