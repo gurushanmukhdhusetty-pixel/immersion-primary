@@ -1,4 +1,4 @@
-export type ProductColor = {name: string; hex: string};
+export type ProductColor = {name: string; hex: string; image?: string}; // image = optional photo of the case in this colour
 
 export type Product = {
   id: string;

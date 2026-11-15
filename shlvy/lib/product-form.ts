@@ -15,9 +15,13 @@ export async function readProductForm(request: Request, id: string) {
     colors: [],
   };
   try {
-    const raw = JSON.parse(String(form.get('colors') ?? '[]')) as {name?: unknown; hex?: unknown}[];
+    const raw = JSON.parse(String(form.get('colors') ?? '[]')) as {name?: unknown; hex?: unknown; image?: unknown}[];
     out.colors = raw
-      .map(c => ({name: String(c.name ?? '').trim().slice(0, 40), hex: /^#[0-9a-f]{6}$/i.test(String(c.hex)) ? String(c.hex) : '#cccccc'}))
+      .map(c => {
+        const img = String(c.image ?? '');
+        const safe = /^\/(api\/files\/products|designs)\/[\w./-]+$/.test(img) && !img.includes('..');
+        return {name: String(c.name ?? '').trim().slice(0, 40), hex: /^#[0-9a-f]{6}$/i.test(String(c.hex)) ? String(c.hex) : '#cccccc', ...(safe ? {image: img} : {})};
+      })
       .filter(c => c.name)
       .slice(0, 20);
   } catch {

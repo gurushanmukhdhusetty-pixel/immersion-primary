@@ -110,6 +110,22 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
   const [f, setF] = useState({name: product?.name ?? '', category: product?.category ?? 'Unisex', theme: product?.theme ?? '', price: product?.price ?? '', visible: product?.visible ?? true});
   const [newCat, setNewCat] = useState('');
   const [colors, setColors] = useState<ProductColor[]>(product?.colors ?? []);
+  const [uploading, setUploading] = useState<number | null>(null);
+  async function uploadColour(i: number, file: File | undefined) {
+    if (!file) return;
+    setUploading(i);
+    setErr('');
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const {url} = await api<{url: string}>('/api/admin/upload', {method: 'POST', body: fd});
+      setColors(cs => cs.map((x, j) => (j === i ? {...x, image: url} : x)));
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setUploading(null);
+    }
+  }
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState(product?.image ?? '');
   const [busy, setBusy] = useState(false);
@@ -176,11 +192,17 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
         {f.category === '__new' && <input className="adm-input" placeholder="New category name" value={newCat} onChange={e => setNewCat(e.target.value)} />}
         <label className="f">Small label above the name (optional)<input className="adm-input" maxLength={100} value={f.theme} onChange={e => setF({...f, theme: e.target.value})} placeholder="e.g. Soft & playful — shows as “… • Silicone”" /></label>
         <div className="f" style={{display: 'flex', flexDirection: 'column', gap: 8}}>
-          <span style={{fontWeight: 600, fontSize: 12, color: 'var(--muted)'}}>Colour options (customers choose one when they buy — leave empty for “as pictured”)</span>
+          <span style={{fontWeight: 600, fontSize: 12, color: 'var(--muted)'}}>Colour options (customers choose one when they buy — leave empty for “as pictured”). Add a photo for each colour so customers see the right case; colours without a photo show the main photo.</span>
           {colors.map((c, i) => (
             <div key={i} className="adm-row" style={{flexWrap: 'nowrap'}}>
               <input type="color" value={c.hex} onChange={e => setColors(colors.map((x, j) => (j === i ? {...x, hex: e.target.value} : x)))} style={{width: 44, height: 40, padding: 2, border: '1px solid var(--line)', borderRadius: 8, background: '#fff', flex: 'none'}} aria-label="Pick colour" />
               <input className="adm-input" placeholder="Colour name, e.g. Midnight Black" maxLength={40} value={c.name} onChange={e => setColors(colors.map((x, j) => (j === i ? {...x, name: e.target.value} : x)))} />
+              <label className="adm-btn ghost sm" style={{flex: 'none', gap: 6}} title="Photo of the case in this colour">
+                {c.image ? <img src={c.image} alt="" style={{width: 18, height: 26, objectFit: 'contain'}} /> : '📷'}
+                {uploading === i ? 'Uploading…' : c.image ? 'Change photo' : 'Add photo'}
+                <input type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e => { uploadColour(i, e.target.files?.[0]); e.target.value = ''; }} />
+              </label>
+              {c.image && <button type="button" className="adm-btn ghost sm" title="Use the main photo for this colour" onClick={() => setColors(colors.map((x, j) => (j === i ? {name: x.name, hex: x.hex} : x)))}>No photo</button>}
               <button type="button" className="adm-btn danger sm" onClick={() => setColors(colors.filter((_, j) => j !== i))} aria-label="Remove colour">✕</button>
             </div>
           ))}
@@ -195,7 +217,7 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
         <label className="adm-row" style={{fontWeight: 600}}><input type="checkbox" checked={f.visible} onChange={e => setF({...f, visible: e.target.checked})} /> Show this design in the shop</label>
         {err && <div className="adm-err">{err}</div>}
         <div className="adm-row">
-          <button className="adm-btn orange" disabled={busy}>{busy ? 'Saving…' : product ? 'Save changes' : 'Add to shop'}</button>
+          <button className="adm-btn orange" disabled={busy || uploading !== null}>{busy ? 'Saving…' : product ? 'Save changes' : 'Add to shop'}</button>
           <button type="button" className="adm-btn ghost" onClick={onClose}>Cancel</button>
         </div>
       </form>

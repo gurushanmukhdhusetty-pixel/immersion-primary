@@ -18,6 +18,8 @@ export async function PATCH(request: Request, {params}: Ctx) {
     if (list.some(p => p.id !== id && p.name.toLowerCase() === data.name!.toLowerCase())) return Response.json({error: 'Another design already uses this name.'}, {status: 400});
     const old = list[i];
     if (data.image && data.image !== old.image) await deleteImage(old.image);
+    const kept = new Set((data.colors ?? []).map(c => c.image));
+    for (const c of old.colors ?? []) if (c.image && !kept.has(c.image)) await deleteImage(c.image);
     list[i] = {...old, ...data, image: data.image || old.image};
     await saveProducts(list);
     return Response.json(list[i]);
@@ -35,7 +37,10 @@ export async function DELETE(_req: Request, {params}: Ctx) {
     const list = await getProducts();
     const p = list.find(x => x.id === id);
     await saveProducts(list.filter(x => x.id !== id));
-    if (p) await deleteImage(p.image);
+    if (p) {
+      await deleteImage(p.image);
+      for (const c of p.colors ?? []) await deleteImage(c.image);
+    }
     return Response.json({ok: true});
   } catch (e) {
     return Response.json({error: e instanceof Error ? e.message : 'Could not delete.'}, {status: 500});

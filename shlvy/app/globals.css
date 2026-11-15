@@ -47,4 +47,6 @@ footer .logo span{font-size:34px}
 .color-chips button{display:inline-flex;align-items:center;gap:8px}
 .color-chips .swatch{width:16px;height:16px;border-radius:50%;border:1px solid #0003;display:inline-block;flex:none}
 .swatches{display:flex;gap:5px;margin-top:9px}
-.swatches i{width:11px;height:11px;border-radius:50%;border:1px solid #ffffff55;box-shadow:0 0 0 1px #0002;display:block}
+.swatches button{width:16px;height:16px;padding:0;border-radius:50%;border:2px solid #ffffff66;box-shadow:0 0 0 1px #0002;display:block;cursor:pointer;transition:transform .15s}
+.swatches button:hover{transform:scale(1.15)}
+.swatches button[aria-pressed=true]{box-shadow:0 0 0 2px currentColor}
