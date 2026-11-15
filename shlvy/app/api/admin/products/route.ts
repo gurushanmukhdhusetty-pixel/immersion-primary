@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       price: data.price!,
       visible: data.visible!,
       colors: data.colors ?? [],
+      caseTypes: data.caseTypes ?? [],
       order: 0,
       createdAt: new Date().toISOString(),
     };

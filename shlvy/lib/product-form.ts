@@ -13,6 +13,7 @@ export async function readProductForm(request: Request, id: string) {
     price: field('price', 40),
     visible: form.get('visible') !== 'false',
     colors: [],
+    caseTypes: [],
   };
   try {
     const raw = JSON.parse(String(form.get('colors') ?? '[]')) as {name?: unknown; hex?: unknown; image?: unknown}[];
@@ -28,6 +29,16 @@ export async function readProductForm(request: Request, id: string) {
     return {error: 'Colour options could not be read.'};
   }
   if (new Set(out.colors!.map(c => c.name.toLowerCase())).size !== out.colors!.length) return {error: 'Two colours have the same name.'};
+  try {
+    const raw = JSON.parse(String(form.get('caseTypes') ?? '[]')) as {name?: unknown; price?: unknown}[];
+    out.caseTypes = raw
+      .map(t => ({name: String(t.name ?? '').trim().slice(0, 40), price: String(t.price ?? '').trim().slice(0, 40)}))
+      .filter(t => t.name)
+      .slice(0, 20);
+  } catch {
+    return {error: 'Case types could not be read.'};
+  }
+  if (new Set(out.caseTypes!.map(t => t.name.toLowerCase())).size !== out.caseTypes!.length) return {error: 'Two case types have the same name.'};
   if (!out.name) return {error: 'Please give the design a name.'};
   const file = form.get('image');
   if (file instanceof File && file.size) {

@@ -25,6 +25,9 @@ export async function POST(request: Request) {
     const colorNames = product?.colors?.map(c => c.name) ?? [];
     if (d.requestType === 'purchase' && colorNames.length && (typeof d.selectedColor !== 'string' || !colorNames.includes(d.selectedColor)))
       return Response.json({error: 'Choose a colour for your case.'}, {status: 400});
+    const typeNames = product?.caseTypes?.map(t => t.name) ?? [];
+    if (d.requestType === 'purchase' && typeNames.length && (typeof d.selectedCaseType !== 'string' || !typeNames.includes(d.selectedCaseType)))
+      return Response.json({error: 'Choose a case type.'}, {status: 400});
 
     let bytes: ArrayBuffer | undefined;
     if (reference) {
@@ -52,6 +55,7 @@ export async function POST(request: Request) {
       requestType: purchase ? 'purchase' : 'custom',
       selectedDesign: purchase ? String(d.selectedDesign) : null,
       selectedColor: purchase && colorNames.length ? String(d.selectedColor) : null,
+      selectedCaseType: purchase && typeNames.length ? String(d.selectedCaseType) : null,
       name: (d.name as string).trim(),
       email: (d.email as string).trim(),
       model: (d.model as string).trim(),

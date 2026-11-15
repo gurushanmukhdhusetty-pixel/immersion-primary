@@ -33,7 +33,7 @@ export default function Orders() {
     return (orders ?? []).filter(o =>
       (status === 'All' || (status === 'Active' ? !['Delivered', 'Cancelled'].includes(o.status) : o.status === status)) &&
       (type === 'All' || (type === 'Buy a design' ? o.requestType === 'purchase' : o.requestType === 'custom')) &&
-      (!s || [o.name, o.email, o.model, o.selectedDesign, o.selectedColor, o.id, o.notes].join(' ').toLowerCase().includes(s)),
+      (!s || [o.name, o.email, o.model, o.selectedDesign, o.selectedColor, o.selectedCaseType, o.id, o.notes].join(' ').toLowerCase().includes(s)),
     );
   }, [orders, status, type, q]);
 
@@ -73,7 +73,7 @@ export default function Orders() {
               <tr key={o.id} className="click" onClick={() => setOpenId(o.id)}>
                 <td className="adm-small">{when(o.createdAt)}</td>
                 <td><b>{o.name}</b><div className="adm-muted adm-small">{o.email}</div></td>
-                <td>{o.selectedDesign || 'Custom design'}{o.selectedColor && <span className="adm-muted"> · {o.selectedColor}</span>}<div><span className="badge type">{o.requestType === 'purchase' ? 'Buy' : 'Custom'}</span></div></td>
+                <td>{o.selectedDesign || 'Custom design'}{[o.selectedColor, o.selectedCaseType].filter(Boolean).map(x => <span key={x} className="adm-muted"> · {x}</span>)}<div><span className="badge type">{o.requestType === 'purchase' ? 'Buy' : 'Custom'}</span></div></td>
                 <td className="hide-m">{o.model}</td>
                 <td className="hide-m">{o.price || '—'}</td>
                 <td><span className={`badge ${o.status}`}>{o.status}</span></td>
@@ -92,7 +92,8 @@ function OrderDrawer({order, onClose, onSaved, onDeleted}: {order: Order; onClos
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ok?: string; err?: string}>({});
   const ref = order.id.slice(0, 8).toUpperCase();
-  const what = order.selectedDesign ? `the ${order.selectedDesign}${order.selectedColor ? ` (${order.selectedColor})` : ''} case` : 'your custom case design';
+  const extras = [order.selectedColor, order.selectedCaseType].filter(Boolean).join(', ');
+  const what = order.selectedDesign ? `the ${order.selectedDesign}${extras ? ` (${extras})` : ''} case` : 'your custom case design';
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -142,6 +143,7 @@ function OrderDrawer({order, onClose, onSaved, onDeleted}: {order: Order; onClos
             <dt>Type</dt><dd>{order.requestType === 'purchase' ? 'Buy an example design' : 'Custom design brief'}</dd>
             {order.selectedDesign && (<><dt>Design</dt><dd><b>{order.selectedDesign}</b></dd></>)}
             {order.selectedColor && (<><dt>Colour</dt><dd><b>{order.selectedColor}</b></dd></>)}
+            {order.selectedCaseType && (<><dt>Case type</dt><dd><b>{order.selectedCaseType}</b></dd></>)}
             <dt>Email</dt><dd><a href={`mailto:${order.email}`}><u>{order.email}</u></a></dd>
             <dt>Phone model</dt><dd>{order.model}</dd>
             {order.requestType === 'custom' && (<>

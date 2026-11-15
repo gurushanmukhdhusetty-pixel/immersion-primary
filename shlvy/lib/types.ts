@@ -1,5 +1,9 @@
 export type ProductColor = {name: string; hex: string; image?: string}; // image = optional photo of the case in this colour
 
+export type ProductCaseType = {name: string; price?: string}; // e.g. Silicone, Hard case, TPU
+
+export const CASE_TYPE_PRESETS = ['Silicone', 'Hard case', 'TPU (soft)', 'Clear', 'MagSafe', 'Leather', 'Tough / Armour', 'Glass back'];
+
 export type Product = {
   id: string;
   name: string;
@@ -10,6 +14,7 @@ export type Product = {
   price: string;
   visible: boolean;
   colors?: ProductColor[]; // colour options the customer can pick
+  caseTypes?: ProductCaseType[]; // case types the customer can pick
   order: number;
   createdAt?: string;
 };
@@ -24,6 +29,7 @@ export type Order = {
   requestType: 'purchase' | 'custom';
   selectedDesign: string | null;
   selectedColor?: string | null;
+  selectedCaseType?: string | null;
   name: string;
   email: string;
   model: string;

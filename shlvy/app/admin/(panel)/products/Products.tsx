@@ -1,6 +1,6 @@
 'use client';
 import {useEffect, useState} from 'react';
-import {BASE_CATEGORIES, type Product, type ProductColor} from '@/lib/types';
+import {BASE_CATEGORIES, CASE_TYPE_PRESETS, type Product, type ProductColor, type ProductCaseType} from '@/lib/types';
 import {api} from '../../ui';
 
 export default function Products() {
@@ -34,6 +34,7 @@ export default function Products() {
     for (const k of ['name', 'category', 'theme', 'price'] as const) fd.append(k, p[k]);
     fd.append('visible', String(!p.visible));
     fd.append('colors', JSON.stringify(p.colors ?? []));
+    fd.append('caseTypes', JSON.stringify(p.caseTypes ?? []));
     try {
       const saved = await api<Product>(`/api/admin/products/${p.id}`, {method: 'PATCH', body: fd});
       setList(l => l?.map(x => (x.id === p.id ? saved : x)) ?? null);
@@ -77,6 +78,7 @@ export default function Products() {
                   <span className="adm-muted adm-small">{p.colors.length} colour{p.colors.length > 1 ? 's' : ''}</span>
                 </div>
               )}
+              {!!p.caseTypes?.length && <div className="adm-small">{p.caseTypes.map(t => t.name).join(' · ')}</div>}
               <div className="adm-muted adm-small">{p.category}{p.theme !== p.category ? ` · ${p.theme}` : ''}{p.price ? ` · ${p.price}` : ''}</div>
               <div className="adm-row" style={{marginTop: 'auto'}}>
                 <button className="adm-btn sm" onClick={() => setEditing(p)}>Edit</button>
@@ -111,6 +113,7 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
   const [newCat, setNewCat] = useState('');
   const [colors, setColors] = useState<ProductColor[]>(product?.colors ?? []);
   const [uploading, setUploading] = useState<number | null>(null);
+  const [caseTypes, setCaseTypes] = useState<ProductCaseType[]>(product?.caseTypes ?? []);
   async function uploadColour(i: number, file: File | undefined) {
     if (!file) return;
     setUploading(i);
@@ -155,6 +158,7 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
     fd.append('price', f.price);
     fd.append('visible', String(f.visible));
     fd.append('colors', JSON.stringify(colors.filter(c => c.name.trim())));
+    fd.append('caseTypes', JSON.stringify(caseTypes.filter(t => t.name.trim())));
     if (file) fd.append('image', file);
     try {
       const saved = await api<Product>(product ? `/api/admin/products/${product.id}` : '/api/admin/products', {method: product ? 'PATCH' : 'POST', body: fd});
@@ -211,6 +215,23 @@ function ProductForm({product, categories, onClose, onSaved}: {product: Product 
             {['Black|#1d1d1f', 'White|#f7f7f2', 'Cream|#efe6d2', 'Sage|#a8b79a', 'Baby Pink|#f2c4cf', 'Navy|#1f2a44'].map(q => q.split('|')).filter(([name]) => !colors.some(c => c.name.toLowerCase() === name.toLowerCase())).map(([name, hex]) => {
               return <button type="button" key={name} className="adm-btn ghost sm" onClick={() => setColors([...colors, {name, hex}])}><span style={{width: 10, height: 10, borderRadius: '50%', background: hex, border: '1px solid #0003'}} />{name}</button>;
             })}
+          </div>
+        </div>
+        <div className="f" style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+          <span style={{fontWeight: 600, fontSize: 12, color: 'var(--muted)'}}>Case types (customers choose one when they buy — leave empty if there’s only one kind). Price is optional and is shown to the customer next to the type.</span>
+          {caseTypes.map((t, i) => (
+            <div key={i} className="adm-row" style={{flexWrap: 'nowrap'}}>
+              <input className="adm-input" placeholder="Case type, e.g. Hard case" maxLength={40} value={t.name} onChange={e => setCaseTypes(caseTypes.map((x, j) => (j === i ? {...x, name: e.target.value} : x)))} />
+              <input className="adm-input" style={{maxWidth: 140}} placeholder="Price, e.g. ₹499" maxLength={40} value={t.price ?? ''} onChange={e => setCaseTypes(caseTypes.map((x, j) => (j === i ? {...x, price: e.target.value} : x)))} />
+              <button type="button" className="adm-btn ghost sm" disabled={i === 0} title="Move up" onClick={() => { const n = [...caseTypes]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setCaseTypes(n); }}>↑</button>
+              <button type="button" className="adm-btn danger sm" onClick={() => setCaseTypes(caseTypes.filter((_, j) => j !== i))} aria-label="Remove case type">✕</button>
+            </div>
+          ))}
+          <div className="adm-row">
+            <button type="button" className="adm-btn ghost sm" onClick={() => setCaseTypes([...caseTypes, {name: '', price: ''}])}>＋ Add a case type</button>
+            {CASE_TYPE_PRESETS.filter(n => !caseTypes.some(t => t.name.toLowerCase() === n.toLowerCase())).map(n => (
+              <button type="button" key={n} className="adm-btn ghost sm" onClick={() => setCaseTypes([...caseTypes, {name: n, price: ''}])}>{n}</button>
+            ))}
           </div>
         </div>
         <label className="f">Price (for your reference when quoting)<input className="adm-input" maxLength={40} value={f.price} onChange={e => setF({...f, price: e.target.value})} placeholder="e.g. ₹499" /></label>
